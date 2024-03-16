@@ -23,14 +23,25 @@ async fn main() -> Result<()> {
     video_rs::init().unwrap();
 
     // load parameters
-    let robot_ip_env = env::var("GO2_IP").unwrap_or_else(|_| "".to_string());
-    let robot_token_default = env::var("GO2_TOKEN").unwrap_or_else(|_| "".to_string());
+    let robot_ip = env::var("GO2_IP").unwrap_or_else(|_| "".to_string());
+    let robot_token = env::var("GO2_TOKEN").unwrap_or_else(|_| "".to_string());
+    let video_port: u16 = 4002;
+    let audio_port: u16 = 4000;
+    let debug_webrtc: bool = true;
 
     // Create a publisher for the image topic
     let publisher = node.create_publisher::<Image>("/image_raw", QosProfile::default())?;
 
+    let _ = go2webrtc_rs::run(
+        video_port,
+        audio_port,
+        robot_ip.as_str(),
+        robot_token.as_str(),
+        debug_webrtc,
+    );
+
     let source = Locator::Url(
-        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        "https://raw.githubusercontent.com/tfoldi/go2webrtc-rs/master/connection.sdp"
             .parse()
             .unwrap(),
     );
