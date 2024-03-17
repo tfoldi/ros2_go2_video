@@ -2,13 +2,23 @@ use anyhow::Result;
 use dotenv::dotenv;
 use std::collections::HashMap;
 use std::env;
+use std::sync::{Arc, Mutex};
 use tokio::task;
 use tokio::time;
 use video_rs::{self, Decoder, Locator};
 
 use r2r;
 use r2r::sensor_msgs::msg::Image;
-use r2r::QosProfile;
+use r2r::{QosProfile, RosParams};
+
+#[derive(RosParams, Default, Debug)]
+struct NodeParams {
+    robot_ip: String,
+    robot_token: String,
+    video_port: u16,
+    audio_port: u16,
+    debug_webrtc: bool,
+}
 
 fn get_decoder_options() -> video_rs::Options {
     let mut options: HashMap<String, String> = HashMap::new();
@@ -35,29 +45,49 @@ async fn main() -> Result<()> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "go2_video", "")?;
     let mut clock = r2r::Clock::create(r2r::ClockType::RosTime)?;
-    let nl = node.logger();
-    r2r::log_info!(nl, "Starting {}", node.name()?);
+    // let nl = node.logger();
+    r2r::log_info!(node.logger(), "Starting {}", node.name()?);
 
     // Initialize the video_rs library
     video_rs::init().unwrap();
 
-    // load parameters
-    let robot_ip = env::var("GO2_IP").unwrap_or_else(|_| "".to_string());
-    let robot_token = env::var("GO2_TOKEN").unwrap_or_else(|_| "".to_string());
-    let video_port: u16 = 4002;
-    let audio_port: u16 = 4000;
-    let debug_webrtc: bool = true;
+    // create our parameters and set default values
+    let node_params = Arc::new(Mutex::new({
+        let mut p = NodeParams::default();
+        p.robot_ip = env::var("ROBOT_IP").unwrap_or_else(|_| "".to_string());
+        p.robot_token = env::var("ROBOT_TOKEN").unwrap_or_else(|_| "".to_string());
+        p.video_port = 4002;
+        p.audio_port = 4000;
+        p.debug_webrtc = true;
+        p
+    }));
+    let _ = node.make_derived_parameter_handler(node_params.clone())?;
 
-    r2r::log_info!(nl, "Connecting to the robot's video stream");
-    let _webrtc_handle = task::spawn(async move {
-        go2webrtc_rs::run(
-            video_port,
-            audio_port,
-            robot_ip.as_str(),
-            robot_token.as_str(),
-            debug_webrtc,
-        )
-        .await
+    r2r::log_info!(node.logger(), "Connecting to the robot's video stream");
+    let _webrtc_handle = task::spawn({
+        let node_params_clone = node_params.clone();
+
+        async move {
+            let (video_port, audio_port, robot_ip, robot_token, debug_webrtc) = {
+                let np = node_params_clone.lock().unwrap(); // Lock is only held within this block
+                (
+                    np.video_port,
+                    np.audio_port,
+                    np.robot_ip.clone(),
+                    np.robot_token.clone(),
+                    np.debug_webrtc,
+                )
+            };
+
+            go2webrtc_rs::run(
+                video_port,
+                audio_port,
+                &robot_ip,
+                &robot_token,
+                debug_webrtc,
+            )
+            .await
+        }
     });
 
     // TODO: wait for the webrtc connection to be established
@@ -70,14 +100,14 @@ async fn main() -> Result<()> {
             .unwrap(),
     );
 
-    r2r::log_debug!(nl, "Opening local stream");
+    r2r::log_debug!(node.logger(), "Opening local stream");
 
     let decoder_options = get_decoder_options();
     let mut decoder =
         Decoder::new_with_options(&source, &decoder_options).expect("failed to create decoder");
 
-    r2r::log_info!(nl, "Input stream size: {:?}", decoder.size());
-    r2r::log_info!(nl, "Output stream size {:?}", decoder.size_out());
+    r2r::log_info!(node.logger(), "Input stream size: {:?}", decoder.size());
+    r2r::log_info!(node.logger(), "Output stream size {:?}", decoder.size_out());
 
     // Create a publisher for the image topic
     let publisher = node.create_publisher::<Image>("/image_raw", QosProfile::default())?;
@@ -97,6 +127,7 @@ async fn main() -> Result<()> {
         image_msg.is_bigendian = 1;
     }
 
+    r2r::log_debug!(node.logger(), "Start processing frames");
     // Process frames one by one
     for frame in decoder.decode_iter() {
         if let Ok((_, frame)) = frame {
