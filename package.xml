@@ -11,9 +11,11 @@
 
   <build_depend>rcl</build_depend>
   <build_depend>sensor_msgs</build_depend>
+  <build_depend>ffmpeg</build_depend>
 
   <exec_depend>rcl</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>ffmpeg</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
