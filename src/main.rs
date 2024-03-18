@@ -110,7 +110,7 @@ async fn main() -> Result<()> {
     r2r::log_info!(node.logger(), "Output stream size {:?}", decoder.size_out());
 
     // Create a publisher for the image topic
-    let publisher = node.create_publisher::<Image>("/image_raw", QosProfile::default())?;
+    let publisher = node.create_publisher::<Image>("/go2_camera/color/image", QosProfile::default())?;
 
     // Create an Image message
     let mut image_msg = Image::default();
