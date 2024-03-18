@@ -1763,7 +1763,7 @@ dependencies = [
 [[package]]
 name = "r2r"
 version = "0.8.3"
-source = "git+https://github.com/sequenceplanner/r2r#8a1444d8f643fdf92f18ebaae49dee5437d450ad"
+source = "git+https://github.com/tfoldi/r2r#c43425bf0bd3b4af0ce7ef1288a8b9a15f852116"
 dependencies = [
  "force-send-sync",
  "futures",
@@ -1789,7 +1789,7 @@ dependencies = [
 [[package]]
 name = "r2r_actions"
 version = "0.8.3"
-source = "git+https://github.com/sequenceplanner/r2r#8a1444d8f643fdf92f18ebaae49dee5437d450ad"
+source = "git+https://github.com/tfoldi/r2r#c43425bf0bd3b4af0ce7ef1288a8b9a15f852116"
 dependencies = [
  "bindgen 0.63.0",
  "r2r_common",
@@ -1800,7 +1800,7 @@ dependencies = [
 [[package]]
 name = "r2r_common"
 version = "0.8.3"
-source = "git+https://github.com/sequenceplanner/r2r#8a1444d8f643fdf92f18ebaae49dee5437d450ad"
+source = "git+https://github.com/tfoldi/r2r#c43425bf0bd3b4af0ce7ef1288a8b9a15f852116"
 dependencies = [
  "bindgen 0.63.0",
  "os_str_bytes",
@@ -1811,7 +1811,7 @@ dependencies = [
 [[package]]
 name = "r2r_macros"
 version = "0.8.3"
-source = "git+https://github.com/sequenceplanner/r2r#8a1444d8f643fdf92f18ebaae49dee5437d450ad"
+source = "git+https://github.com/tfoldi/r2r#c43425bf0bd3b4af0ce7ef1288a8b9a15f852116"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1821,7 +1821,7 @@ dependencies = [
 [[package]]
 name = "r2r_msg_gen"
 version = "0.8.3"
-source = "git+https://github.com/sequenceplanner/r2r#8a1444d8f643fdf92f18ebaae49dee5437d450ad"
+source = "git+https://github.com/tfoldi/r2r#c43425bf0bd3b4af0ce7ef1288a8b9a15f852116"
 dependencies = [
  "bindgen 0.63.0",
  "force-send-sync",
@@ -1838,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "r2r_rcl"
 version = "0.8.3"
-source = "git+https://github.com/sequenceplanner/r2r#8a1444d8f643fdf92f18ebaae49dee5437d450ad"
+source = "git+https://github.com/tfoldi/r2r#c43425bf0bd3b4af0ce7ef1288a8b9a15f852116"
 dependencies = [
  "bindgen 0.63.0",
  "paste",
